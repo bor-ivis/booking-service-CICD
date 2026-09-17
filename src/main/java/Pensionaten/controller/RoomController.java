@@ -53,7 +53,7 @@ public class RoomController {
             model.addAttribute("error", "Rumsnumret finns redan");
             return "customers/room/form";
         }
-        return "redirect:/rooms/";
+        return "redirect:/rooms";
     }
 
     // Öppnar formuläret för att redigera ett befintligt rum
