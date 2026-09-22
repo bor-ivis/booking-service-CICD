@@ -25,7 +25,7 @@ public class BookingService {
     private final RoomRepository roomRepository;
     private final RoomService roomService;
     private final RestTemplate restTemplate;
-    private static final String CUSTOMER_SERVICE_URL = "http://localhost:8081/api/customers";
+    private static final String CUSTOMER_SERVICE_URL = "http://customer-service:8081/api/customers";
 
     // Hämtar alla bokningar och gör om dem från Entity till DTO
     public List<BookingDTO> findAll() {

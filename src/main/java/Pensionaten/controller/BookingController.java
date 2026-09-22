@@ -26,7 +26,7 @@ public class BookingController {
     private final RestTemplate restTemplate;
     private final RoomService roomService;
     private final BookingService bookingService;
-    private static final String CUSTOMER_SERVICE_URL = "http://localhost:8081/api/customers";
+    private static final String CUSTOMER_SERVICE_URL = "http://customer-service:8081/api/customers";
 
     //Visar alla kunder i bokningssidan
     private List<CustomerDTO> fetchAllCustomers() {

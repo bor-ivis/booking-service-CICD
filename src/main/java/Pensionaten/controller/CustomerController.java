@@ -26,7 +26,7 @@ public class CustomerController {
 
     private final RestTemplate restTemplate;
     private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
-    private static final String CUSTOMER_SERVICE_URL = "http://localhost:8081/api/customers";
+    private static final String CUSTOMER_SERVICE_URL = "http://customer-service:8081/api/customers";
 
 
     // Visar alla registrerade kunder
