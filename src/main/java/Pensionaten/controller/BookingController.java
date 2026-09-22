@@ -1,5 +1,5 @@
 package Pensionaten.controller;
-
+import org.springframework.beans.factory.annotation.Value;
 import Pensionaten.dto.BookingDTO;
 import Pensionaten.dto.CustomerDTO;
 import Pensionaten.service.BookingService;
@@ -26,12 +26,13 @@ public class BookingController {
     private final RestTemplate restTemplate;
     private final RoomService roomService;
     private final BookingService bookingService;
-    private static final String CUSTOMER_SERVICE_URL = "http://customer-service:8081/api/customers";
+    @Value("${customer.service.url}")
+    private String customerServiceUrl;
 
     //Visar alla kunder i bokningssidan
     private List<CustomerDTO> fetchAllCustomers() {
         try {
-            CustomerDTO[] customers = restTemplate.getForObject(CUSTOMER_SERVICE_URL, CustomerDTO[].class);
+            CustomerDTO[] customers = restTemplate.getForObject(customerServiceUrl, CustomerDTO[].class);
             return customers != null ? List.of(customers) : Collections.emptyList();
         } catch (ResourceAccessException e) {
             return null;

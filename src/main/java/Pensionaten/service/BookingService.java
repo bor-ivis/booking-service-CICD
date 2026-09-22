@@ -4,7 +4,7 @@ import Pensionaten.dto.BookingDTO;
 import Pensionaten.dto.CustomerDTO;
 import Pensionaten.models.Booking;
 import Pensionaten.repositories.BookingRepository;
-
+import org.springframework.beans.factory.annotation.Value;
 import Pensionaten.repositories.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,8 @@ public class BookingService {
     private final RoomRepository roomRepository;
     private final RoomService roomService;
     private final RestTemplate restTemplate;
-    private static final String CUSTOMER_SERVICE_URL = "http://customer-service:8081/api/customers";
+    @Value("${customer.service.url}")
+    private String customerServiceUrl;
 
     // Hämtar alla bokningar och gör om dem från Entity till DTO
     public List<BookingDTO> findAll() {
@@ -45,7 +46,7 @@ public class BookingService {
     //Kollar om kunden finns genom rest anrop till customer-service
     private boolean customerExists(Long customerId) {
         try {
-            restTemplate.getForObject(CUSTOMER_SERVICE_URL + "/" + customerId, CustomerDTO.class);
+            restTemplate.getForObject(customerServiceUrl + "/" + customerId, CustomerDTO.class);
             return true;
         } catch (HttpClientErrorException.NotFound e) {
             return false;
@@ -132,7 +133,7 @@ public class BookingService {
 
         try {
             CustomerDTO customer = restTemplate.getForObject(
-                    CUSTOMER_SERVICE_URL + "/" + booking.getCustomerId(), CustomerDTO.class);
+                    customerServiceUrl + "/" + booking.getCustomerId(), CustomerDTO.class);
             if (customer != null) {
                 dto.setCustomerFirstName(customer.getFirstName());
                 dto.setCustomerLastName(customer.getLastName());

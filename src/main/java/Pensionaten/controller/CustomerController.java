@@ -1,5 +1,5 @@
 package Pensionaten.controller;
-
+import org.springframework.beans.factory.annotation.Value;
 import Pensionaten.dto.CustomerDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,14 +26,16 @@ public class CustomerController {
 
     private final RestTemplate restTemplate;
     private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
-    private static final String CUSTOMER_SERVICE_URL = "http://customer-service:8081/api/customers";
+    //private static final String CUSTOMER_SERVICE_URL = "http://customer-service:8081/api/customers";
+    @Value("${customer.service.url}")
+    private String customerServiceUrl;
 
 
     // Visar alla registrerade kunder
     @GetMapping
     public String listCustomers(Model model) {
         try {
-            CustomerDTO[] customers = restTemplate.getForObject(CUSTOMER_SERVICE_URL, CustomerDTO[].class);
+            CustomerDTO[] customers = restTemplate.getForObject(customerServiceUrl, CustomerDTO[].class);
             model.addAttribute("customers", customers != null ? List.of(customers) : Collections.emptyList());
         } catch (ResourceAccessException e) { //Tjänsten ska inte krascha om customer-service är nere
             logger.error("Kundtjänsten svarar inte: {}", e.getMessage());
@@ -60,9 +62,9 @@ public class CustomerController {
         }
         try {
             if (customerDTO.getId() == null) {
-                restTemplate.postForObject(CUSTOMER_SERVICE_URL, customerDTO, CustomerDTO.class);
+                restTemplate.postForObject(customerServiceUrl, customerDTO, CustomerDTO.class);
             } else {
-                restTemplate.put(CUSTOMER_SERVICE_URL + "/" + customerDTO.getId(), customerDTO);
+                restTemplate.put(customerServiceUrl + "/" + customerDTO.getId(), customerDTO);
             }
         } catch (ResourceAccessException e) {
             logger.error("Kundtjänsten svarar inte: {}", e.getMessage());
@@ -77,7 +79,7 @@ public class CustomerController {
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         try {
-            CustomerDTO customer = restTemplate.getForObject(CUSTOMER_SERVICE_URL + "/" + id, CustomerDTO.class);
+            CustomerDTO customer = restTemplate.getForObject(customerServiceUrl + "/" + id, CustomerDTO.class);
             if (customer == null) {
                 return "redirect:/customers";
             }
@@ -96,7 +98,7 @@ public class CustomerController {
     @GetMapping("/delete/{id}")
     public String deleteCustomer(@PathVariable Long id, RedirectAttributes redirect) {
         try {
-            restTemplate.delete(CUSTOMER_SERVICE_URL + "/" + id);
+            restTemplate.delete(customerServiceUrl + "/" + id);
             redirect.addFlashAttribute("message", "Kunden är borttagen.");
         } catch (HttpClientErrorException.Conflict e) {
             logger.warn("Kund med id {} kunde inte tas bort, har aktiva bokningar", id);
