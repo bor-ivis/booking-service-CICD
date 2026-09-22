@@ -235,7 +235,6 @@ mvn test
 ---
 
 # 📸 Bilder
-
 ## Startsida
 
 <img width="1902" height="907" alt="image" src="https://github.com/user-attachments/assets/f360cc69-3836-4b75-ab86-9ec4047fe887" />
