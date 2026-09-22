@@ -30,8 +30,12 @@ public class BookingController {
 
     //Visar alla kunder i bokningssidan
     private List<CustomerDTO> fetchAllCustomers() {
-        CustomerDTO[] customers = restTemplate.getForObject(CUSTOMER_SERVICE_URL, CustomerDTO[].class);
-        return customers != null ? List.of(customers) : Collections.emptyList();
+        try {
+            CustomerDTO[] customers = restTemplate.getForObject(CUSTOMER_SERVICE_URL, CustomerDTO[].class);
+            return customers != null ? List.of(customers) : Collections.emptyList();
+        } catch (ResourceAccessException e) {
+            return Collections.emptyList();
+        }
     }
 
     // Visar alla bokningar
@@ -45,7 +49,11 @@ public class BookingController {
     @GetMapping("/new")
     public String showBookingForm(Model model) {
         model.addAttribute("booking", new BookingDTO());
-        model.addAttribute("customers", fetchAllCustomers());
+        List<CustomerDTO> customers = fetchAllCustomers();
+        model.addAttribute("customers", customers);
+        if (customers.isEmpty()) {
+            model.addAttribute("error", "Kunde inte hämta gästlistan just nu. Försök igen senare.");
+        }
         model.addAttribute("rooms", List.of());
         return "customers/bookings/form";
     }
@@ -87,7 +95,7 @@ public class BookingController {
             return "customers/bookings/form";
         }
 
-        boolean success = bookingService.saveBooking(bookingDTO);
+        boolean success;
         try {
             success = bookingService.saveBooking(bookingDTO);
         } catch (ResourceAccessException e) {
