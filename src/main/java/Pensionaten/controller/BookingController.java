@@ -1,8 +1,8 @@
 package Pensionaten.controller;
 
 import Pensionaten.dto.BookingDTO;
+import Pensionaten.dto.CustomerDTO;
 import Pensionaten.service.BookingService;
-import Pensionaten.service.CustomerService;
 import Pensionaten.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Collections;
 import java.util.List;
 
 // Controller som hanterar bokningar i webbgränssnittet
@@ -19,9 +22,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookingController {
 
-    private final CustomerService customerService;
+    private final RestTemplate restTemplate;
     private final RoomService roomService;
     private final BookingService bookingService;
+    private static final String CUSTOMER_SERVICE_URL = "http://localhost:8081/api/customers";
+
+    //Visar alla kunder i bokningssidan
+    private List<CustomerDTO> fetchAllCustomers() {
+        CustomerDTO[] customers = restTemplate.getForObject(CUSTOMER_SERVICE_URL, CustomerDTO[].class);
+        return customers != null ? List.of(customers) : Collections.emptyList();
+    }
 
     // Visar alla bokningar
     @GetMapping
@@ -34,7 +44,7 @@ public class BookingController {
     @GetMapping("/new")
     public String showBookingForm(Model model) {
         model.addAttribute("booking", new BookingDTO());
-        model.addAttribute("customers", customerService.findAll());
+        model.addAttribute("customers", fetchAllCustomers());
         model.addAttribute("rooms", List.of());
         return "customers/bookings/form";
     }
@@ -42,7 +52,7 @@ public class BookingController {
     // Söker fram lediga rum baserat på datum och antal gäster
     @PostMapping("/search")
     public String searchRooms(@ModelAttribute("booking") BookingDTO bookingDTO, Model model) {
-        model.addAttribute("customers", customerService.findAll());
+        model.addAttribute("customers", fetchAllCustomers());
 
         if (bookingDTO.getCheckInDate() != null &&
                 bookingDTO.getCheckOutDate() != null &&
@@ -71,7 +81,7 @@ public class BookingController {
                               RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
-            model.addAttribute("customers", customerService.findAll());
+            model.addAttribute("customers", fetchAllCustomers());
             model.addAttribute("rooms", List.of());
             return "customers/bookings/form";
         }
@@ -80,7 +90,7 @@ public class BookingController {
 
         if (!success) {
             model.addAttribute("error", "Bokningen kunde inte sparas. Gästen har redan en bokning under dessa datum eller så är rummet upptaget");
-            model.addAttribute("customers", customerService.findAll());
+            model.addAttribute("customers", fetchAllCustomers());
             model.addAttribute("rooms", roomService.findAvailableRooms(
                     bookingDTO.getCheckInDate(),
                     bookingDTO.getCheckOutDate(),
@@ -104,7 +114,7 @@ public class BookingController {
         }
 
         model.addAttribute("booking", bookingDTO);
-        model.addAttribute("customers", customerService.findAll());
+        model.addAttribute("customers", fetchAllCustomers());
         model.addAttribute("rooms", roomService.findAvailableRooms(
                 bookingDTO.getCheckInDate(),
                 bookingDTO.getCheckOutDate(),
@@ -115,7 +125,7 @@ public class BookingController {
         return "customers/bookings/form";
     }
 
-    // Tarr bort / avbokar en bokning
+    // Tar bort / avbokar en bokning
     @GetMapping("/delete/{id}")
     public String deleteBooking(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         boolean deleted = bookingService.deleteById(id);

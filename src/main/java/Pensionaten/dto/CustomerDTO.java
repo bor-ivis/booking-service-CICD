@@ -1,13 +1,16 @@
 package Pensionaten.dto;
 
-import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-// DTO som används när kunder skapas, ändras och visas i webben.
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class CustomerDTO {
 
     private Long id;
@@ -24,7 +27,6 @@ public class CustomerDTO {
     @Email(message = "E-post måste vara giltig")
     private String email;
 
-    // Enkel validering för svenska och internationella telefonnummer
     @Pattern(
             regexp = "^\\+?[0-9]{1,4}?[ .-]?[0-9]{6,12}$",
             message = "Telefonnummer är ogiltigt"

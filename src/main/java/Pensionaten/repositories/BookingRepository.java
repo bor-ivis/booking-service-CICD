@@ -20,7 +20,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("""
         SELECT COUNT (b) > 0
         FROM Booking b
-        WHERE b.customer.id = :customerId
+        WHERE b.customerId = :customerId
         AND b.checkInDate < :checkOutDate
         AND b.checkOutDate > :checkInDate
         AND ( :bookingId IS NULL OR b.id <> :bookingId)
