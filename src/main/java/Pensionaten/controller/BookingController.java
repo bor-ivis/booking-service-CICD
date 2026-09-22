@@ -34,7 +34,7 @@ public class BookingController {
             CustomerDTO[] customers = restTemplate.getForObject(CUSTOMER_SERVICE_URL, CustomerDTO[].class);
             return customers != null ? List.of(customers) : Collections.emptyList();
         } catch (ResourceAccessException e) {
-            return Collections.emptyList();
+            return null;
         }
     }
 
@@ -49,11 +49,15 @@ public class BookingController {
     @GetMapping("/new")
     public String showBookingForm(Model model) {
         model.addAttribute("booking", new BookingDTO());
+
         List<CustomerDTO> customers = fetchAllCustomers();
-        model.addAttribute("customers", customers);
-        if (customers.isEmpty()) {
+        if (customers == null) {
+            model.addAttribute("customers", Collections.emptyList());
             model.addAttribute("error", "Kunde inte hämta gästlistan just nu. Försök igen senare.");
+        } else {
+            model.addAttribute("customers", customers);
         }
+
         model.addAttribute("rooms", List.of());
         return "customers/bookings/form";
     }
@@ -61,7 +65,14 @@ public class BookingController {
     // Söker fram lediga rum baserat på datum och antal gäster
     @PostMapping("/search")
     public String searchRooms(@ModelAttribute("booking") BookingDTO bookingDTO, Model model) {
-        model.addAttribute("customers", fetchAllCustomers());
+
+        List<CustomerDTO> customers = fetchAllCustomers();
+        if (customers == null) {
+            model.addAttribute("customers", Collections.emptyList());
+            model.addAttribute("error", "Kunde inte hämta gästlistan just nu. Försök igen senare.");
+        } else {
+            model.addAttribute("customers", customers);
+        }
 
         if (bookingDTO.getCheckInDate() != null &&
                 bookingDTO.getCheckOutDate() != null &&
@@ -131,7 +142,15 @@ public class BookingController {
         }
 
         model.addAttribute("booking", bookingDTO);
-        model.addAttribute("customers", fetchAllCustomers());
+
+        List<CustomerDTO> customers = fetchAllCustomers();
+        if (customers == null) {
+            model.addAttribute("customers", Collections.emptyList());
+            model.addAttribute("error", "Kunde inte hämta gästlistan just nu. Försök igen senare.");
+        } else {
+            model.addAttribute("customers", customers);
+        }
+
         model.addAttribute("rooms", roomService.findAvailableRooms(
                 bookingDTO.getCheckInDate(),
                 bookingDTO.getCheckOutDate(),
