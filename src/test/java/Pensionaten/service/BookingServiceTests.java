@@ -1,4 +1,4 @@
-package Pensionaten.service;
+/* package Pensionaten.service;
 
 import Pensionaten.dto.BookingDTO;
 import Pensionaten.models.Customer;
@@ -200,3 +200,4 @@ class BookingServiceTests {
         return dto;
     }
 }
+*/

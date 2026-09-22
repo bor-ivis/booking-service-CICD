@@ -1,4 +1,4 @@
-package Pensionaten.models;
+/*package Pensionaten.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -31,4 +31,4 @@ public class Customer {
     // Validerar att telefonnumret följer ett rimligt format
     @Pattern(regexp = "^\\+?[0-9]{1,4}?[ .-]?[0-9]{6,12}$")
     private String phone;
-}
+}*/

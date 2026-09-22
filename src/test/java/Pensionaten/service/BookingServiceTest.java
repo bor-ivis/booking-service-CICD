@@ -1,12 +1,11 @@
 package Pensionaten.service;
 
 import Pensionaten.dto.BookingDTO;
+import Pensionaten.dto.CustomerDTO;
 import Pensionaten.models.Booking;
-import Pensionaten.models.Customer;
 import Pensionaten.models.Room;
 import Pensionaten.models.RoomType;
 import Pensionaten.repositories.BookingRepository;
-import Pensionaten.repositories.CustomerRepository;
 import Pensionaten.repositories.RoomRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,12 +13,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,52 +30,51 @@ class BookingServiceTest {
     private BookingRepository bookingRepository;
 
     @Mock
-    private CustomerRepository customerRepository;
-
-    @Mock
     private RoomRepository roomRepository;
 
     @Mock
     private RoomService roomService;
 
+    @Mock
+    private RestTemplate restTemplate;
+
     @InjectMocks
     private BookingService bookingService;
 
-    private Customer customer;
     private Room room;
     private Booking booking;
+    private CustomerDTO customerDTO;
 
     @BeforeEach
     void setUp() {
-
-        customer = Customer.builder()
-                .id(9L)
-                .firstName("Namn")
-                .lastName("Efternamn")
-                .email("testmail@hotmail.com")
-                .phone("1234556789")
-                .build();
 
         room = Room.builder()
                 .id(9L)
                 .roomNumber("101")
                 .roomType(RoomType.SINGLE)
                 .extraBeds(0)
+                .pricePerNight(1000)
                 .build();
 
         booking = new Booking();
         booking.setId(9L);
-        booking.setCustomer(customer);
+        booking.setCustomerId(9L);
         booking.setRoom(room);
         booking.setCheckInDate(LocalDate.of(2026, 6, 1));
         booking.setCheckOutDate(LocalDate.of(2026, 6, 3));
         booking.setNumberOfGuests(1);
+
+        customerDTO = new CustomerDTO();
+        customerDTO.setId(9L);
+        customerDTO.setFirstName("Namn");
+        customerDTO.setLastName("Efternamn");
     }
 
     @Test
     void findAll_shouldReturnBookingDTOList() {
 
         when(bookingRepository.findAll()).thenReturn(List.of(booking));
+        when(restTemplate.getForObject(anyString(), eq(CustomerDTO.class))).thenReturn(customerDTO);
 
         List<BookingDTO> result = bookingService.findAll();
 
@@ -86,9 +86,10 @@ class BookingServiceTest {
     @Test
     void findById_shouldReturnBookingDTO_whenBookingExists() {
 
-        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(bookingRepository.findById(9L)).thenReturn(Optional.of(booking));
+        when(restTemplate.getForObject(anyString(), eq(CustomerDTO.class))).thenReturn(customerDTO);
 
-        BookingDTO result = bookingService.findById(1L);
+        BookingDTO result = bookingService.findById(9L);
 
         assertNotNull(result);
         assertEquals(9L, result.getId());
@@ -120,6 +121,8 @@ class BookingServiceTest {
     void saveBooking_shouldReturnFalse_whenCheckoutIsBeforeCheckin() {
 
         BookingDTO dto = new BookingDTO();
+        dto.setCustomerId(1L);
+        dto.setRoomId(1L);
         dto.setCheckInDate(LocalDate.of(2026, 6, 3));
         dto.setCheckOutDate(LocalDate.of(2026, 6, 1));
 
@@ -139,12 +142,10 @@ class BookingServiceTest {
         dto.setCheckOutDate(LocalDate.of(2026, 6, 3));
         dto.setNumberOfGuests(1);
 
-        when(roomService.isRoomAvailable(
-                1L,
-                dto.getCheckInDate(),
-                dto.getCheckOutDate(),
-                1,
-                null))
+        when(bookingRepository.existsCustomerBookingConflict(anyLong(), any(), any(), any()))
+                .thenReturn(false);
+
+        when(roomService.isRoomAvailable(1L, dto.getCheckInDate(), dto.getCheckOutDate(), 1, null))
                 .thenReturn(false);
 
         boolean result = bookingService.saveBooking(dto);
@@ -163,19 +164,13 @@ class BookingServiceTest {
         dto.setCheckOutDate(LocalDate.of(2026, 6, 3));
         dto.setNumberOfGuests(1);
 
-        when(roomService.isRoomAvailable(
-                1L,
-                dto.getCheckInDate(),
-                dto.getCheckOutDate(),
-                1,
-                null))
+        when(bookingRepository.existsCustomerBookingConflict(anyLong(), any(), any(), any()))
+                .thenReturn(false);
+
+        when(roomService.isRoomAvailable(1L, dto.getCheckInDate(), dto.getCheckOutDate(), 1, null))
                 .thenReturn(true);
 
-        when(customerRepository.findById(1L))
-                .thenReturn(Optional.of(customer));
-
-        when(roomRepository.findById(1L))
-                .thenReturn(Optional.of(room));
+        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
 
         boolean result = bookingService.saveBooking(dto);
 

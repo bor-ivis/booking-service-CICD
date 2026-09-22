@@ -1,12 +1,15 @@
 package Pensionaten.service;
 
 import Pensionaten.dto.BookingDTO;
+import Pensionaten.dto.CustomerDTO;
 import Pensionaten.models.Booking;
 import Pensionaten.repositories.BookingRepository;
-import Pensionaten.repositories.CustomerRepository;
+
 import Pensionaten.repositories.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -16,9 +19,11 @@ import java.util.List;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
-    private final CustomerRepository customerRepository;
+    //private final CustomerRepository customerRepository;
     private final RoomRepository roomRepository;
     private final RoomService roomService;
+    private final RestTemplate restTemplate;
+    private static final String CUSTOMER_SERVICE_URL = "http://localhost:8081/api/customers";
 
     // Hämtar alla bokningar och gör om dem från Entity till DTO
     public List<BookingDTO> findAll() {
@@ -82,7 +87,7 @@ public class BookingService {
                 ? bookingRepository.findById(dto.getId()).orElse(new Booking())
                 : new Booking();
 
-        booking.setCustomer(customerRepository.findById(dto.getCustomerId()).orElseThrow());
+        booking.setCustomerId(dto.getCustomerId());
         booking.setRoom(roomRepository.findById(dto.getRoomId()).orElseThrow());
         booking.setCheckInDate(dto.getCheckInDate());
         booking.setCheckOutDate(dto.getCheckOutDate());
@@ -107,10 +112,19 @@ public class BookingService {
         BookingDTO dto = new BookingDTO();
 
         dto.setId(booking.getId());
+        dto.setCustomerId(booking.getCustomerId());
 
-        dto.setCustomerId(booking.getCustomer().getId());
+        //Hämtar kundens namn via REST
+        CustomerDTO customer = restTemplate.getForObject(
+                CUSTOMER_SERVICE_URL + "/" + booking.getCustomerId(), CustomerDTO.class );
+        if (customer != null){
+            dto.setCustomerFirstName(customer.getFirstName());
+            dto.setCustomerLastName(customer.getLastName());
+        }
+
+        /*dto.setCustomerId(booking.getCustomer().getId());
         dto.setCustomerFirstName(booking.getCustomer().getFirstName());
-        dto.setCustomerLastName(booking.getCustomer().getLastName());
+        dto.setCustomerLastName(booking.getCustomer().getLastName());*/
 
         dto.setRoomId(booking.getRoom().getId());
         dto.setRoomNumber(booking.getRoom().getRoomNumber());
