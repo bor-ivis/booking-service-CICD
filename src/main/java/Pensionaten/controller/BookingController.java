@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -87,6 +88,14 @@ public class BookingController {
         }
 
         boolean success = bookingService.saveBooking(bookingDTO);
+        try {
+            success = bookingService.saveBooking(bookingDTO);
+        } catch (ResourceAccessException e) {
+            model.addAttribute("error", "Bokningen kunde inte hanteras just nu. Försök igen senare");
+            model.addAttribute("customers", fetchAllCustomers());
+            model.addAttribute("rooms", List.of());
+            return "customers/bookings/form";
+        }
 
         if (!success) {
             model.addAttribute("error", "Bokningen kunde inte sparas. Gästen har redan en bokning under dessa datum eller så är rummet upptaget");

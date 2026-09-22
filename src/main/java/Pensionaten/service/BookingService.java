@@ -42,6 +42,16 @@ public class BookingService {
                 .orElse(null);
     }
 
+    //Kollar om kunden finns genom rest anrop till customer-service
+    private boolean customerExists(Long customerId) {
+        try {
+            restTemplate.getForObject(CUSTOMER_SERVICE_URL + "/" + customerId, CustomerDTO.class);
+            return true;
+        } catch (HttpClientErrorException.NotFound e) {
+            return false;
+        }
+    }
+
     public boolean saveBooking(BookingDTO dto) {
 
         // Kontrollerar att kund och rum är valda
@@ -56,6 +66,10 @@ public class BookingService {
 
         // Kontrollerar att utcheckning är efter incheckning
         if (!dto.getCheckOutDate().isAfter(dto.getCheckInDate())) {
+            return false;
+        }
+
+        if (!customerExists(dto.getCustomerId())) {
             return false;
         }
 
@@ -149,14 +163,5 @@ public class BookingService {
         dto.setTotalPrice((int) nights * booking.getRoom().getPricePerNight());
 
         return dto;
-    }
-    //Kollar om kunden finns genom rest anrop till customer-service
-    private boolean customerExists(Long customerId) {
-        try {
-            restTemplate.getForObject(CUSTOMER_SERVICE_URL + "/" + customerId, CustomerDTO.class);
-            return true;
-        } catch (HttpClientErrorException.NotFound e) {
-            return false;
-        }
     }
 }
