@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -103,6 +104,9 @@ public class CustomerController {
         } catch (HttpClientErrorException.NotFound e) {
             logger.warn("Kund med id {} hittades inte", id);
             redirect.addFlashAttribute("error", "Kunden kunde inte hittas.");
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            logger.error("Bokningstjänsten svarar inte, kan inte kontrollera aktiva bokningar för kund {}", id);
+            redirect.addFlashAttribute("error", "Kunde inte kontrollera bokningar just nu. Försök igen senare.");
         } catch (ResourceAccessException e) {
             logger.error("Kundtjänsten svarar inte: {}", e.getMessage());
             redirect.addFlashAttribute("error", "Kunde inte ta bort kunden just nu. Försök igen senare.");
