@@ -16,10 +16,9 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // En bokning måste alltid kopplas till en kund
-    @ManyToOne(optional = false)
-    @JoinColumn //FK
-    private Customer customer;
+    // Sparar kundens id
+    @NotNull
+    private Long customerId;
 
     // En bokning måste alltid kopplas till ett rum
     @ManyToOne(optional = false)
