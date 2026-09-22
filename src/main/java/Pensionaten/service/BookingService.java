@@ -8,6 +8,8 @@ import Pensionaten.repositories.BookingRepository;
 import Pensionaten.repositories.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.temporal.ChronoUnit;
@@ -114,14 +116,20 @@ public class BookingService {
         dto.setId(booking.getId());
         dto.setCustomerId(booking.getCustomerId());
 
-        //Hämtar kundens namn via REST
-        CustomerDTO customer = restTemplate.getForObject(
-                CUSTOMER_SERVICE_URL + "/" + booking.getCustomerId(), CustomerDTO.class );
-        if (customer != null){
-            dto.setCustomerFirstName(customer.getFirstName());
-            dto.setCustomerLastName(customer.getLastName());
+        try {
+            CustomerDTO customer = restTemplate.getForObject(
+                    CUSTOMER_SERVICE_URL + "/" + booking.getCustomerId(), CustomerDTO.class);
+            if (customer != null) {
+                dto.setCustomerFirstName(customer.getFirstName());
+                dto.setCustomerLastName(customer.getLastName());
+            }
+        } catch (HttpClientErrorException.NotFound e) {
+            dto.setCustomerFirstName("Okänd");
+            dto.setCustomerLastName("kund");
+        } catch (ResourceAccessException e) {
+            dto.setCustomerFirstName("Kunde inte hämtas");
+            dto.setCustomerLastName("");
         }
-
         /*dto.setCustomerId(booking.getCustomer().getId());
         dto.setCustomerFirstName(booking.getCustomer().getFirstName());
         dto.setCustomerLastName(booking.getCustomer().getLastName());*/
