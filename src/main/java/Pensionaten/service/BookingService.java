@@ -150,4 +150,13 @@ public class BookingService {
 
         return dto;
     }
+    //Kollar om kunden finns genom rest anrop till customer-service
+    private boolean customerExists(Long customerId) {
+        try {
+            restTemplate.getForObject(CUSTOMER_SERVICE_URL + "/" + customerId, CustomerDTO.class);
+            return true;
+        } catch (HttpClientErrorException.NotFound e) {
+            return false;
+        }
+    }
 }
