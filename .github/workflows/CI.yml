@@ -35,7 +35,7 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
-      - name: Build and test
+      - name: Build and run the tests
         run: mvn test
         env:
           DB_URL: jdbc:mysql://localhost:3306/bookingdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
