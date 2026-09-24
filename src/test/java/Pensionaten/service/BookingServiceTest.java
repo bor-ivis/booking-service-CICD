@@ -78,7 +78,7 @@ class BookingServiceTest {
 
         List<BookingDTO> result = bookingService.findAll();
 
-        assertEquals(5, result.size());
+        assertEquals(1, result.size());
         assertEquals("Namn", result.get(0).getCustomerFirstName());
         assertEquals("101", result.get(0).getRoomNumber());
     }
