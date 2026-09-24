@@ -15,7 +15,7 @@ jobs:
         image: mysql:8
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: bookingdb
+          MYSQL_DATABASE: Pensionatendb
         ports:
           - 3306:3306
         options: >-
@@ -38,6 +38,6 @@ jobs:
       - name: Build and run the tests
         run: mvn test
         env:
-          DB_URL: jdbc:mysql://localhost:3306/bookingdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+          DB_URL: jdbc:mysql://localhost:3306/Pensionatendb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
           DB_USERNAME: root
           DB_PASSWORD: root
